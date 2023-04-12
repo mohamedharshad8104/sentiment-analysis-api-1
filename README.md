@@ -4,7 +4,7 @@ by Michael Claus
 This repository contains the code for a sentiment analysis API built using Python, Flask, Hugging Face's Transformers library, Docker, and deployed on AWS. The API utilizes a pre-trained model to classify input text as positive, negative, or neutral.
 
 <video width="320" height="240" controls>
-  <source src="README/sentiment-analysis-api-demo-michael-claus-480.mov" type="video/mov">
+  <source src="https://github.com/mclausaudio/sentiment-analysis-api/blob/main/README/sentiment-analysis-api-demo-michael-claus-480.mov?raw=true" type="video/mov">
 </video>
 
 ## Getting Started
