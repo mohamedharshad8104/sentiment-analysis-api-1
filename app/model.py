@@ -2,9 +2,10 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 # Specify the name of the pre-trained model
-# The model "finiteautomata/bertweet-base-sentiment-analysis" is a pre-trained BERT model, 
-# which has been trained on a large corpus of text for masked language modeling and next sentence prediction tasks. 
-# This base model is not specifically set up for sentiment analysis.
+# The model "finiteautomata/bertweet-base-sentiment-analysis" is a pre-trained BERT model,
+# which has been trained on Tweets.
+# This base model is specifically set up for sentiment analysis.
+
 model_name = "finiteautomata/bertweet-base-sentiment-analysis"
 
 # Load the pre-trained model for sequence classification
