@@ -12,27 +12,28 @@ env:
 phases:
   install:
     runtime-versions:
-      docker: 20
+      python: 3.10
     commands:
-      - echo Installing kubectl...
+      - echo "Installing Docker CLI and kubectl..."
+      - curl -fsSL https://get.docker.com -o get-docker.sh
+      - sh get-docker.sh
       - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      - chmod +x ./kubectl
-      - mv ./kubectl /usr/local/bin/
+      - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
   build:
     commands:
-      - echo Building Docker image...
+      - echo "Building Docker image..."
       - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:7}
       - docker build -t $ECR_REPO:$IMAGE_TAG .
       - docker tag $ECR_REPO:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
   post_build:
     commands:
-      - echo Pushing image to ECR...
+      - echo "Pushing image to ECR..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
-      - echo Deploying updated image to EKS...
+      - echo "Deploying to EKS..."
       - aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME
       - kubectl set image deployment/$K8S_DEPLOYMENT $CONTAINER_NAME=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
 artifacts:
