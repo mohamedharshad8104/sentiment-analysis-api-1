@@ -1,7 +1,6 @@
 # Sentiment Analysis API
-by Michael Claus
 
-[READ THE FULL ARTICLE HERE](https://medium.com/@michaelclaus/building-a-sentiment-analysis-api-with-python-hugging-faces-transformers-and-aws-20962ee27ca0)
+
 
 
 This repository contains the code for a sentiment analysis API built using Python, Flask, Hugging Face's Transformers library, Docker, and deployed on AWS. The API utilizes a pre-trained model to classify input text as positive, negative, or neutral.
