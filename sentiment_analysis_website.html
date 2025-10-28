@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Sentiment Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .sentiment-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .sentiment-positive {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .sentiment-negative {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .sentiment-neutral {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .sentiment-score {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .sentiment-label {
+            font-size: 1.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .product-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .product-details h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .review-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        .api-config {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .api-config h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .demo-reviews {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .demo-review-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .demo-review-card:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+        }
+
+        .demo-review-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Product Sentiment Analysis</h1>
+            <p>Analyze customer reviews and feedback in real-time</p>
+        </div>
+
+        <div class="input-section">
+            <div class="api-config">
+                <h4>⚙️ API Configuration</h4>
+                <p><strong>Note:</strong> Enter your Sentiment Analysis API endpoint below. Replace with your actual deployed API URL.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="apiEndpoint">API Endpoint URL:</label>
+                <input type="text" id="apiEndpoint" value="http://a21831d7ab38640918a136c32e783ef9-1199317499.us-east-1.elb.amazonaws.com/sentiment">
+
+            </div>
+
+            <div class="form-group">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" placeholder="e.g., iPhone 15 Pro, Nike Air Max">
+            </div>
+
+            <div class="form-group">
+                <label for="reviewText">Customer Review:</label>
+                <textarea id="reviewText" placeholder="Enter customer review or feedback here..."></textarea>
+            </div>
+
+            <button class="btn" onclick="analyzeSentiment()">Analyze Sentiment</button>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px; color: #667eea;">📝 Try Demo Reviews:</h3>
+            <div class="demo-reviews">
+                <div class="demo-review-card" onclick="loadDemoReview('positive')">
+                    <h4>😊 Positive Review</h4>
+                    <p>Great product experience</p>
+                </div>
+                <div class="demo-review-card" onclick="loadDemoReview('negative')">
+                    <h4>😞 Negative Review</h4>
+                    <p>Poor product quality</p>
+                </div>
+                <div class="demo-review-card" onclick="loadDemoReview('neutral')">
+                    <h4>😐 Neutral Review</h4>
+                    <p>Average experience</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Analysis Results</h2>
+            
+            <div class="product-details">
+                <h3>Product: <span id="displayProductName"></span></h3>
+                <div class="review-text" id="displayReviewText"></div>
+            </div>
+
+            <div class="sentiment-card" id="sentimentCard">
+                <div class="sentiment-label" id="sentimentLabel">ANALYZING...</div>
+                <div class="sentiment-score" id="sentimentScore">--</div>
+                <p style="font-size: 1.2em;">Confidence Score</p>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="sentimentChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        const demoReviews = {
+            positive: {
+                product: "Wireless Headphones Pro",
+                text: "Absolutely amazing headphones! The sound quality is crystal clear and the noise cancellation works perfectly. Battery life lasts all day and they're super comfortable. Best purchase I've made this year!"
+            },
+            negative: {
+                product: "Budget Smartphone X",
+                text: "Very disappointed with this phone. Battery drains in 3 hours, camera quality is terrible, and it lags constantly. Customer service was unhelpful. Would not recommend to anyone."
+            },
+            neutral: {
+                product: "Standard Office Chair",
+                text: "It's an okay chair for the price. Assembly was straightforward and it seems sturdy enough. Not the most comfortable for long hours but gets the job done. Nothing special but nothing terrible either."
+            }
+        };
+
+        function loadDemoReview(type) {
+            const review = demoReviews[type];
+            document.getElementById('productName').value = review.product;
+            document.getElementById('reviewText').value = review.text;
+        }
+
+        async function analyzeSentiment() {
+            const apiEndpoint = document.getElementById('apiEndpoint').value;
+            const productName = document.getElementById('productName').value;
+            const reviewText = document.getElementById('reviewText').value;
+
+            if (!productName || !reviewText) {
+                alert('Please enter both product name and review text');
+                return;
+            }
+
+            // Show results section with loading state
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('displayProductName').textContent = productName;
+            document.getElementById('displayReviewText').textContent = reviewText;
+
+            // Simulate API call - Replace this with actual API call
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: reviewText
+                    })
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Error calling backend API::', error);
+                alert('Loading...!');
+            }
+        }
+
+        function simulateSentimentAnalysis(text) {
+            // Simple keyword-based sentiment simulation
+            const positiveWords = ['amazing', 'great', 'excellent', 'perfect', 'love', 'best', 'wonderful', 'fantastic', 'outstanding'];
+            const negativeWords = ['terrible', 'bad', 'worst', 'disappointing', 'poor', 'awful', 'horrible', 'useless'];
+            
+            const lowerText = text.toLowerCase();
+            let positiveCount = positiveWords.filter(word => lowerText.includes(word)).length;
+            let negativeCount = negativeWords.filter(word => lowerText.includes(word)).length;
+            
+            let sentiment, score;
+            if (positiveCount > negativeCount) {
+                sentiment = 'positive';
+                score = Math.min(0.7 + (positiveCount * 0.1), 0.98);
+            } else if (negativeCount > positiveCount) {
+                sentiment = 'negative';
+                score = Math.min(0.6 + (negativeCount * 0.1), 0.95);
+            } else {
+                sentiment = 'neutral';
+                score = 0.5 + Math.random() * 0.2;
+            }
+
+            return {
+                sentiment: sentiment,
+                score: score,
+                confidence: {
+                    positive: sentiment === 'positive' ? score : (1 - score) / 2,
+                    negative: sentiment === 'negative' ? score : (1 - score) / 2,
+                    neutral: sentiment === 'neutral' ? score : 1 - score
+                }
+            };
+        }
+
+        function displayResults(data) {
+            const sentimentCard = document.getElementById('sentimentCard');
+            const sentimentLabel = document.getElementById('sentimentLabel');
+            const sentimentScore = document.getElementById('sentimentScore');
+
+            // Update sentiment display
+            sentimentCard.className = 'sentiment-card sentiment-' + data.sentiment;
+            sentimentLabel.textContent = data.sentiment.toUpperCase();
+            sentimentScore.textContent = (data.score * 100).toFixed(1) + '%';
+
+            // Create chart
+            createChart(data.confidence);
+        }
+
+        function createChart(confidence) {
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        label: 'Confidence Score',
+                        data: [
+                            (confidence.positive * 100).toFixed(1),
+                            (confidence.negative * 100).toFixed(1),
+                            (confidence.neutral * 100).toFixed(1)
+                        ],
+                        backgroundColor: [
+                            'rgba(56, 239, 125, 0.8)',
+                            'rgba(244, 92, 67, 0.8)',
+                            'rgba(245, 87, 108, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(56, 239, 125, 1)',
+                            'rgba(244, 92, 67, 1)',
+                            'rgba(245, 87, 108, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Sentiment Distribution',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
